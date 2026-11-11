@@ -35,5 +35,8 @@ export function orderFor(a: Account | null, o: Order): Order {
   // Internal Resolve Hub notes are for the Sudhaar team only.
   const complaints = base.complaints.map((c) => (c.thread?.some((m) => m.internal) ? { ...c, thread: c.thread.filter((m) => !m.internal) } : c));
   if (a && a.role === "customer" && o.customerId === a.id) return { ...base, complaints };
-  return { ...base, complaints, pickupOtp: "", deliveryOtp: "", trackToken: undefined, familyPay: base.familyPay && { ...base.familyPay, token: undefined } };
+  // Defence in depth: scrub any OTP that ever got into event text (older demo data).
+  const scrub = (m: string) => [o.pickupOtp, o.deliveryOtp].filter((x) => x && x.length >= 4).reduce((t, x) => t.split(x).join("••••"), m);
+  const events = base.events.map((e) => ({ ...e, message: scrub(e.message) }));
+  return { ...base, complaints, events, pickupOtp: "", deliveryOtp: "", trackToken: undefined, familyPay: base.familyPay && { ...base.familyPay, token: undefined } };
 }

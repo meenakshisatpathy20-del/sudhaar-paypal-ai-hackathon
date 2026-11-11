@@ -618,7 +618,7 @@ const dict: Dict = {
   tkStatus: "ଆପଣଙ୍କ ମରାମତି କେଉଁଠି ଅଛି କହେ।",
   tkCancel: "ପିକଅପ ପୂର୍ବରୁ ବାତିଲ କରେ; PayPal ଅଟକା ଟଙ୍କା ଛାଡ଼େ।",
   tkClaim: "AI ସମୀକ୍ଷା ସହ ୱାରେଣ୍ଟି ଦାବି ଦାଖଲ କରେ।",
-  tkRefund: "ନୀତି ଅନୁମତି ଦେଉଥିବା ଛୋଟ ରିଫଣ୍ଡ, PayPal ଦେଇ।",
+  tkRefund: "ରିଫଣ୍ଡ ଅନୁରୋଧ Resolve Hub ଟିମକୁ ପଠାଏ।",
   tkSafe: "ସହାୟକ କେବେ ନିଜେ ଟଙ୍କା ନିଏ ନାହିଁ: ପ୍ରତି ପେମେଣ୍ଟ ପାଇଁ PayPal ଖୋଲେ ଏବଂ ଆପଣ ଅନୁମୋଦନ କରନ୍ତି।",
   navResolve: "Resolve Hub",
   navKarigarApp: "କାରିଗର ଡ୍ୟାସବୋର୍ଡ",

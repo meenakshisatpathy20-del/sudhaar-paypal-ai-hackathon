@@ -234,7 +234,7 @@ export async function sendPayouts(
       sender_batch_header: {
         sender_batch_id: `sudhaar-${batchKey}`,
         email_subject: "You have a Sudhaar payout",
-        email_message: "Thank you for the repair. Your share has been paid instantly by Sudhaar.",
+        email_message: "Thank you for the repair. Your share of the repair has been sent by Sudhaar.",
       },
       items: lines.map((l) => ({
         recipient_type: "EMAIL",

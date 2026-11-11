@@ -141,7 +141,7 @@
   },
   {
     "name": "cancel_booking",
-    "description": "Cancel a booking that hasn't been picked up yet. Confirm with the caller first.",
+    "description": "Cancel a booking that hasn't been picked up yet. Confirm with the caller first, then ask for their 4-digit Sudhaar PIN (sent by SMS at sign-up). If the result says needs_pin, ask for the PIN again.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -152,6 +152,10 @@
         "order_id": {
           "type": "string",
           "description": "Order number if the caller said it, else empty"
+        },
+        "pin": {
+          "type": "string",
+          "description": "The caller's 4-digit Sudhaar PIN, digits only"
         }
       },
       "required": [
@@ -163,7 +167,8 @@
       "method": "POST",
       "param": {
         "phone": "%(phone)s",
-        "order_id": "%(order_id)s"
+        "order_id": "%(order_id)s",
+        "pin": "%(pin)s"
       },
       "url": "https://YOUR-SUDHAAR-SITE/api/voice/cancel",
       "api_token": "Bearer YOUR_VOICE_API_TOKEN",

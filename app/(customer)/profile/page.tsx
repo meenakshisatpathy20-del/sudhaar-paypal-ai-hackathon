@@ -11,6 +11,7 @@ import { LangToggle } from "@/components/LangToggle";
 import { useLang } from "@/components/LanguageProvider";
 import { RequireLogin } from "@/components/LoginSheet";
 import { ModeBadges } from "@/components/ModeBadges";
+import { ProfileJourney } from "@/components/ProfileJourney";
 import { useSession } from "@/components/SessionProvider";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -67,8 +68,8 @@ function ProfileInner() {
       <Card className="overflow-hidden">
         <div className="bg-gradient-to-br from-primary/15 via-card to-teal/10 p-5 sm:p-6">
           <div className="flex flex-wrap items-center gap-4">
-            <Avatar name={account.name} color="#0f766e" className="size-16 text-lg" />
-            <div className="min-w-0 flex-1">
+            <Avatar name={account.name} color="#0f766e" className="size-14 text-lg sm:size-16" />
+            <div className="min-w-0 flex-1 basis-52">
               <h1 className="flex flex-wrap items-center gap-2 text-2xl font-bold">
                 {account.name}
                 {account.care && (
@@ -115,6 +116,8 @@ function ProfileInner() {
           </div>
         </div>
       </Card>
+
+      <ProfileJourney orders={orders} itemsRepaired={impact.itemsRepaired} openClaims={openClaims} />
 
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <div className="space-y-4">

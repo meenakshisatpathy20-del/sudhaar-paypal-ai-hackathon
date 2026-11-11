@@ -7,7 +7,7 @@ import { isOpenClaim } from "./claims-shared";
 import { advance, createBasketOrder, createOrder, createQuote, FlowError, offersFor, raiseComplaint } from "./orders";
 import { maskPhone, notifyOrder, payLink, resendOtp, sendSms } from "./sms";
 import { geocodeAddress } from "./geocode";
-import { hashPin } from "./pin";
+import { hashPin, pinMatches } from "./pin";
 import { INR_PER_USD, serviceModeFor } from "./pricing";
 import { pickupSlots, slotLabel } from "./slots";
 import type { Account, Category, Complaint, Order } from "./types";
@@ -279,8 +279,15 @@ export function voiceStatus(input: { phone?: unknown }) {
 }
 
 /** Cancel before pickup: PayPal releases the hold (or the unpaid booking is dropped). */
-export async function voiceCancel(input: { phone?: unknown; order_id?: unknown }) {
+export async function voiceCancel(input: { phone?: unknown; order_id?: unknown; pin?: unknown }) {
   const phone = callerPhone(input.phone);
+  // Caller ID can be spoofed, so a cancellation also needs the customer's 4-digit Sudhaar PIN
+  // (the one texted at sign-up). Without it nothing changes and the agent asks for the PIN.
+  const acct = findCustomer(phone);
+  const pin = String(input.pin ?? "").replace(/\D/g, "");
+  if (!acct || !acct.pinHash || !/^\d{4}$/.test(pin) || !pinMatches(pin, acct.pinHash)) {
+    return { cancelled: false, needs_pin: true, say: pin ? "यह PIN सही नहीं है। कृपया अपना 4 अंकों का सुधार PIN फिर से बताइए।" : "रद्द करने के लिए कृपया अपना 4 अंकों का सुधार PIN बताइए, जो आपको SMS में मिला था।" };
+  }
   const o = callerOrders(phone).find((x) => x.id === String(input.order_id ?? "").trim().toUpperCase()) ?? callerOrders(phone).find((x) => ["awaiting_payment", "authorized"].includes(x.status));
   if (!o) throw new FlowError("No booking that can still be cancelled on this number.");
   if (!["awaiting_payment", "authorized"].includes(o.status)) throw new FlowError("This repair has already been picked up, so it can't be cancelled now.");

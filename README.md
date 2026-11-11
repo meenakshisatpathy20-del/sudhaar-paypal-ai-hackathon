@@ -1,15 +1,17 @@
 # Sudhaar — Repair, don't replace
 
-**A doorstep repair marketplace for local karigars (informal repairers), built on PayPal + AI.**
-Snap a photo of something broken. AI estimates the repair cost against the price of buying new. A verified local karigar fixes it, a Repair Saathi does the pickup and delivery, and the customer's PayPal payment is **held until the repaired item is back in their hands**. On the delivery OTP, PayPal captures the money and **instantly pays out the karigar and the Saathi**.
+*By **Team Innoverse**: Meenakshi Satpathy & Manas Girdhar · PayPal AI Hackathon 2026*
 
-> 🌐 **Live demo:** the *Website* link in this repository's About section ·· 📸 **[Screenshots](docs/SCREENSHOTS.md)** · 🧭 **[Demo guide: every page and feature](docs/DEMO-GUIDE.md)** (also in the app at `/guide`)
+**A doorstep repair marketplace for local karigars (informal repairers), built on PayPal + AI.**
+Snap a photo of something broken. AI estimates the repair cost against the price of buying new. A verified local karigar fixes it, a Repair Saathi does the pickup and delivery, and the customer's PayPal payment is **authorized (held, not captured) until the repaired item is back in their hands**. On the delivery OTP, Sudhaar captures the payment and sends a **PayPal Payouts batch** to the karigar and the Saathi, then reconciles each payout's real status. Every order ends in a **Repair Trust Receipt**: one proof trail where each step is green only when its evidence (PayPal id, OTP check, photo review) exists.
+
+> 🌐 **Live demo:** the *Website* link in this repository's About section ·· 📸 **[Screenshots](docs/SCREENSHOTS.md)** · 🧭 **[Demo guide: every page and feature](docs/DEMO-GUIDE.md)** (also in the app at `/guide`) · ✅ **[Test evidence](docs/TESTING.md)** (27/27 lifecycle + security checks, 8-language AI)
 
 ---
 
-## Why I built this
+## Why we built this
 
-This Diwali, my mother was sorting old things at home that only needed a small repair. Even though we live in a city, she struggled to find anyone to fix them. The karigars (cobblers, tailors, mixer and fan repairers) are right there in our neighbourhood, but nobody can find them online, nobody comes home to collect the items, and nobody knows what a fair price is. So people buy new and throw the old one away.
+This Diwali, Meenakshi's mother was sorting old things at home that only needed a small repair. Even though we live in a city, she struggled to find anyone to fix them. The karigars (cobblers, tailors, mixer and fan repairers) are right there in our neighbourhood, but nobody can find them online, nobody comes home to collect the items, and nobody knows what a fair price is. So people buy new and throw the old one away.
 
 Sudhaar fixes each of those problems:
 
@@ -52,10 +54,10 @@ sequenceDiagram
 ```
 
 ### Repair Agent (agentic commerce)
-`/agent` is a Gemini function-calling agent that **acts for the customer**: *"My mixer jar blade is loose, get it fixed under $8 by Friday."* It quotes the job (with vision if a photo is attached), picks the karigar against the budget and deadline, **books it and creates the PayPal order**, tracks status, files warranty claims and **issues refunds up to a $5 policy limit that is enforced in code**. It uses **PayPal Agent Toolkit** tools for PayPal lookups (orders, invoices, refunds, transactions, disputes). The customer approves every payment in the PayPal popup, so the agent can never spend money on its own.
+`/agent` is a Gemini function-calling agent that **acts for the customer**: *"My mixer jar blade is loose, get it fixed under $8 by Friday."* It quotes the job (with vision if a photo is attached), picks the karigar against the budget and deadline, **books it and creates the PayPal order**, tracks status, files warranty claims and **recommends refunds, which a human on the Resolve Hub desk always approves (enforced in code: the agent cannot move money)**. It uses **PayPal Agent Toolkit** tools for PayPal lookups (orders, invoices, refunds, transactions, disputes). The customer approves every payment in the PayPal popup, so the agent can never spend money on its own.
 
 ### 🪔 Ghar Safai Mode (my favourite feature)
-Born from my mother's Diwali cleaning: walk around the house and snap every broken thing (a bag zip, a chappal, the mixer). Gemini quotes each item, the best karigar is picked for each, **one Repair Saathi collects everything in one trip** (cheaper than separate pickups), and the customer makes **one PayPal payment**. On delivery PayPal captures it once and **Payouts splits it to every karigar for their own items** plus the Saathi. Each karigar repairs only their items in the Karigar app, with an AI photo check per item.
+Born from a real Diwali cleaning at home: walk around the house and snap every broken thing (a bag zip, a chappal, the mixer). Gemini quotes each item, the best karigar is picked for each, **one Repair Saathi collects everything in one trip** (cheaper than separate pickups), and the customer makes **one PayPal payment**. On delivery PayPal captures it once and **Payouts splits it to every karigar for their own items** plus the Saathi. Each karigar repairs only their items in the Karigar app, with an AI photo check per item.
 
 ### 💞 Family Pay
 Many parents live alone while their children work in other cities. A parent books the repair (even by voice), picks *Someone else pays*, and shares a WhatsApp link. The son or daughter opens `/pay/<order>` and **approves the PayPal payment from their own account**. The money is still only held until the item is back home.
@@ -129,13 +131,14 @@ Google **Gemini** (`gemini-flash-latest` by default, via Google's official `@goo
 
 Without a `GEMINI_API_KEY`, features 1–3 fall back to a deterministic estimator that is clearly labelled "Simulated" in the UI. The agent needs a key. If Gemini is busy or over its usage limit, quotes fall back to the price table, photo checks go to a person, and the agent asks the customer to try again in a minute.
 
-## How I built it (and how I used AI)
+## Team Innoverse: who built it (and how we used AI)
 
-I'm a solo participant, a 3rd-year Computer Science student.
+| Member | Role |
+|---|---|
+| **Meenakshi Satpathy** | Idea (from a real problem at home), research, product design and features: OTP handovers, Repair Saathi pickup, distance pricing and tracking, Resolve Hub, KYC-verified karigars, the 90% karigar split. PayPal sandbox testing and the demo video. |
+| **Manas Girdhar** | Co-builder: development, testing and review of the product. |
 
-**My part:** I came up with the idea from a real problem at home, researched it, and designed the product and its features: OTP handovers, Repair Saathi pickup by local volunteers and students, Shiprocket-style distance pricing and tracking, Resolve Hub complaints with bill proof, KYC-verified karigars, and a fair split so karigars keep 90%. I also did the testing in the PayPal sandbox and made the demo video.
-
-**AI as my coding assistant:** I used Claude Code (Anthropic's AI coding assistant) to turn my design into code. The first commit, the initial app, was generated with Claude Code from my specification. Later changes, fixes and new features were also written with Claude Code, following my product decisions and feedback, and I reviewed and tested them.
+**AI as our coding assistant:** we used Claude Code (Anthropic's AI coding assistant) to turn our design into code. The first commit, the initial app, was generated with Claude Code from our specification. Later changes, fixes and new features were also written with Claude Code, following our product decisions and feedback, and we reviewed and tested them. At run time the product's own AI is Google Gemini.
 
 ## Design decisions (and why)
 
@@ -168,6 +171,30 @@ So a website booking keeps roughly ₹59, and a phone booking still covers its c
 - **AG Grid**: the Admin console at `/admin` (partner side) (orders, payouts, karigars, PayPal webhooks) with sorting, filtering and pagination.
 - **Render**: one-click deploy via [`render.yaml`](render.yaml).
 - **Postman**: [`postman/Sudhaar.postman_collection.json`](postman/Sudhaar.postman_collection.json) drives the whole flow through the API.
+
+## Trust and safety (hackathon hardening)
+
+| Guarantee | Where it is enforced |
+|---|---|
+| **Repair Trust Receipt**: AI quote → payment hold → pickup OTP → photo review → delivery OTP → capture → payouts, each with its PayPal reference. No false greens: a step is green only when its evidence exists | `components/TrustReceipt.tsx` (order page) |
+| AI unavailable or unsure **never** auto-approves a repair: the payment stays held and a human reviewer compares the photos | `lib/ai.ts` `checkCompletion()`, admin review in `lib/orders.ts` |
+| OTPs never appear in activity logs; partner and public views scrub any code from event text; SMS logs mask codes | `lib/orders.ts`, `lib/privacy.ts` `orderFor()`, `lib/sms.ts` |
+| Repair photos are private: sign-in required (or the anonymous visitor who uploaded it), 128-bit opaque ids, file signature check, `private` cache + `nosniff` | `app/api/uploads/*` |
+| Every refund is decided by a person; the AI agent can only recommend | `lib/agent.ts` (`issue_refund` always escalates) |
+| Phone cancellations need the caller's 4-digit PIN, not just caller ID | `lib/voice.ts` `voiceCancel()` |
+| Gemini overload/timeouts switch to a lighter model for 5 minutes, so demos never hang | `lib/llm.ts` |
+| Quotes, agent replies and **spoken replies in all 8 languages** (browser voice, else Gemini TTS) | `lib/ai.ts`, `app/api/tts`, `components/voice.ts` |
+| Capture only after delivery OTP; payouts only after capture; payout status reconciled from PayPal (`SUCCESS`/`PENDING`/`FAILED`), not assumed | `lib/orders.ts`, `app/api/partner/payouts` |
+| One-tap judge logins are a **sandbox-only** convenience (synthetic data, test money). `DEMO_ADMIN=off` disables demo admin, `ALLOW_RESET=off` disables reset; reset is rate-limited | `app/api/auth/demo`, `app/api/reset` |
+
+**Payments wording:** PayPal Orders v2 `intent=AUTHORIZE` is an authorization, not regulated escrow. Everything runs in the **PayPal sandbox (USD test money)**. INR amounts in the UI use a fixed, labelled demo rate (`INR_PER_USD=85`), not live FX. PayPal does not offer domestic payments inside India, so a production launch would use local rails for domestic orders and PayPal for cross-border (diaspora Family Pay) payments.
+
+## Known limitations
+
+- The phone line (Bolna) needs a Bolna account and number; without them the site hides it.
+- Authorizations have an honor period (about 3 days); long repairs may need reauthorization, which is not yet automated.
+- A photo can screen evidence but cannot prove an internal electrical or mechanical repair, so a human stays in the loop.
+- JSON-file storage (with optional Upstash snapshot) is fine for a demo, not for production scale.
 
 ## Testing instructions for judges
 
@@ -276,7 +303,7 @@ scripts/            PayPal sandbox smoke test
 
 ## From hackathon to startup
 
-Sudhaar works end to end today as a demo on the PayPal sandbox. This is my plan to make it work for millions of households, and the facts it rests on.
+Sudhaar works end to end today as a demo on the PayPal sandbox. This is our plan to make it work for millions of households, and the facts it rests on.
 
 **Why now**
 - The world generated a record **62 million tonnes of e-waste in 2022**, and only **22.3%** was documented as properly collected and recycled ([UN Global E-waste Monitor 2024](https://unitar.org/about/news-stories/press/global-e-waste-monitor-2024-electronic-waste-rising-five-times-faster-documented-e-waste-recycling)). Mixers, fans, phones and chargers are a big part of what Sudhaar repairs.
@@ -302,15 +329,15 @@ Sudhaar works end to end today as a demo on the PayPal sandbox. This is my plan 
 | **2. One city** | "Repair Points" at kirana shops for drop-off, smarter Saathi routes that combine pickups, DigiLocker ID checks with consent, transit insurance for items, voice-first Karigar and Saathi apps, translations reviewed by native speakers |
 | **3. More cities and countries** | Bulk Ghar Safai for housing societies and offices, a booking line over WhatsApp or phone calls for people without smartphones, PayPal multiparty in PayPal-domestic markets |
 
-**Risks I've designed for**
+**Risks we've designed for**
 - **Trust:** verified karigars (ID, shop visit, trial repair), money held until the delivery OTP, a before/after photo check with a human fallback, and Resolve Hub with a 15-day warranty.
-- **People skipping the app after the first visit:** karigars stay because Sudhaar brings steady jobs, instant payouts and free pickup; customers stay for the warranty and the held payment.
+- **People skipping the app after the first visit:** karigars stay because Sudhaar brings steady jobs, payouts right after delivery and free pickup; customers stay for the warranty and the held payment.
 - **Weak networks:** the app installs on a phone's home screen and shows a clear offline page and banner instead of empty or wrong screens.
 
 ## Notes
 - **Rupees for people, USD for PayPal:** customers, karigars and Saathis see prices in **₹**, based on real street-repair rates in Indian cities. The PayPal sandbox settles in **USD**, so every total also shows the exact amount PayPal holds and captures, at ₹85 = $1 (`INR_PER_USD` in `lib/pricing.ts`). The Admin console and PayPal records stay in USD so they match the sandbox dashboard.
 - **Accounts and roles:** customers, karigars, Saathis and admins log in with phone + PIN (PINs stored as scrypt hashes, sessions in signed HttpOnly cookies, wrong PINs lock the number for 15 minutes). Every API checks the role on the server: customers see only their own orders, karigars only their jobs, Saathis only their trips (and never the OTPs). The demo logins above are shared, so judges may see each other's test orders under "Anita"; *Reset demo data* in the Admin console clears them. A real launch would add SMS OTP.
-- **Refund decisions are made by people:** customers raise issues in Resolve Hub; the AI recommends, and the support team approves in **Admin console → Resolve Hub**. Only the Repair Agent may auto-refund small amounts (up to $5), a limit enforced in code.
+- **Refund decisions are made by people:** customers raise issues in Resolve Hub; the AI recommends, and the support team approves in **Admin console → Resolve Hub**. The Repair Agent can only recommend and escalate; it has no path to issue a refund on its own.
 - **Fair use:** AI endpoints are rate-limited per visitor so the public demo can't be used to burn AI credits.
 - **Unpaid bookings expire** after 2 hours (24 hours for Family Pay links) and nothing is charged, like a checkout that times out.
 - Uploaded photos are stored on the server's disk; on free hosting they reset when the server restarts.

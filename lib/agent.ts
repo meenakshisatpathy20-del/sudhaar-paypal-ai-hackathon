@@ -17,7 +17,7 @@ import type { Account, Complaint, Order } from "./types";
 // transactions) go through the PayPal Agent Toolkit. The customer approves every payment in the
 // PayPal popup, so the agent can never spend money on its own.
 
-export const AUTO_REFUND_LIMIT = 5; // USD. Larger refunds go to the human support desk.
+export const AUTO_REFUND_LIMIT = 0; // USD. Policy: EVERY refund is decided by a human on the Resolve Hub desk; the agent only recommends.
 
 type Card =
   | { type: "quote"; quoteId: string; item: string; repairLow: number; repairHigh: number; newPrice: number; source: string }
@@ -65,7 +65,7 @@ You act on the customer's behalf, not just advise:
 4a. Bookings get the earliest pickup window (shown as pickup_window, Indian time). Tell the customer when the Saathi will come.
 4b. Ghar Safai Mode: if the customer has several things to fix (e.g. Diwali cleaning), quote each item, then book them together with book_ghar_safai_basket: one Saathi trip and one PayPal payment split across the karigars.
 4c. Family Pay: if the customer wants a family member to pay (e.g. "ask my son to pay"), pass family_payer_name and family_payer_relation. The family member gets a link and approves with their own PayPal.
-5. For problems after delivery, use raise_warranty_claim. If the AI review recommends a refund of at most $${AUTO_REFUND_LIMIT}, you may call issue_refund. Larger refunds go to the support desk.
+5. For problems after delivery, use raise_warranty_claim. You can never issue money yourself: if the AI review recommends a refund, call issue_refund, which hands it to a human on the Resolve Hub desk, and tell the customer a person will decide.
 6. Use the PayPal lookup tools (get_order, get_invoice, list_invoices, get_refund, list_transactions) when the customer asks about bills, payments or refunds.
 
 Keep replies short and friendly (2-5 sentences), because they are often read aloud by voice. Write plain text only: no Markdown, no ** bold, no bullet symbols or headings. Use plain language and follow the language note on each message. Never invent order ids, prices or PayPal ids: only use what tools return.
@@ -144,7 +144,7 @@ const CUSTOM_TOOLS: FunctionDeclaration[] = [
   },
   {
     name: "issue_refund",
-    description: `Issue a PayPal refund for an open complaint whose AI review recommended a refund. Only works up to $${AUTO_REFUND_LIMIT}; larger amounts are escalated.`,
+    description: "Send an open complaint whose AI review recommended a refund to the human Resolve Hub desk. The agent cannot move money itself; a person approves every refund.",
     parametersJsonSchema: {
       type: "object",
       properties: { order_id: { type: "string" }, complaint_id: { type: "string" } },
@@ -245,7 +245,7 @@ async function runCustomTool(name: string, input: Record<string, unknown>, sessi
       if (!before || !c) throw new FlowError("Complaint not found");
       if (!c.ai || c.ai.refundAmount <= 0) throw new FlowError("The AI review did not recommend a refund for this complaint");
       // Policy is enforced here in code, not only in the prompt.
-      if (c.ai.refundAmount > AUTO_REFUND_LIMIT) return { escalated: true, reason: `Refund of $${c.ai.refundAmount.toFixed(2)} is above the $${AUTO_REFUND_LIMIT} agent limit; sent to the support desk.` };
+      if (c.ai.refundAmount > AUTO_REFUND_LIMIT) return { escalated: true, reason: `A refund of $${c.ai.refundAmount.toFixed(2)} was recommended. Every refund is approved by a person on the Resolve Hub desk, so it has been sent there.` };
       const o = await resolveComplaint(before.id, c.id, { action: "refund", amount: c.ai.refundAmount, by: { name: "Sudhaar AI agent" }, remarks: `Small refund under the $${AUTO_REFUND_LIMIT} policy limit, sent automatically.` });
       const r = o.complaints.find((x) => x.id === c.id)?.resolution;
       cards.push({ type: "refund", orderId: o.id, amount: r?.amount ?? 0, refundId: r?.refundId });

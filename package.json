@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "smoke:paypal": "node --env-file=.env scripts/paypal-smoke.mjs",
+    "test:flow": "node scripts/lifecycle-test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -28,7 +28,7 @@ type Line = { quote: Quote; offers: Offer[]; karigarId: string };
 
 export default function GharSafai() {
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [photo, setPhoto] = useState<string>();
   const [photoKey, setPhotoKey] = useState(0);
   const [description, setDescription] = useState("");
@@ -48,7 +48,7 @@ export default function GharSafai() {
     setError(null);
     setAdding(true);
     try {
-      const r = await api<{ quote: Quote; offers: Offer[] }>("/api/quote", { photo, description, category: category ?? undefined });
+      const r = await api<{ quote: Quote; offers: Offer[] }>("/api/quote", { photo, description, category: category ?? undefined, lang });
       if (HOME_VISIT_CATEGORIES.includes(r.quote.category)) throw new Error(t("gharErrVisit", { item: r.quote.item }));
       if (!r.quote.repairable) throw new Error(t("gharErrNotWorth", { item: r.quote.item }));
       if (r.offers.length === 0) throw new Error(t("gharErrNoKarigar", { item: r.quote.item }));

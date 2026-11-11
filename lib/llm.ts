@@ -16,37 +16,49 @@ export const gemini = () =>
 // a chat. Models that don't accept the setting get the request again without it.
 let thinkingSupported = true;
 
-/** True when Google says the model is overloaded or briefly unavailable (usually passes in seconds). */
+/** True when Google says the model is overloaded, timed out, or is briefly unavailable. */
 export const isOverloaded = (e: unknown) => {
   const status = (e as { status?: number })?.status;
-  return status === 503 || status === 500 || /UNAVAILABLE|overloaded|high demand/i.test(String((e as Error)?.message ?? ""));
+  const msg = String((e as Error)?.message ?? "");
+  return status === 503 || status === 500 || status === 504 || /UNAVAILABLE|overloaded|high demand|DEADLINE_EXCEEDED|timed? ?out|aborted|ETIMEDOUT|ECONNRESET/i.test(msg);
 };
 
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// Circuit breaker: after the main model fails, use the fallback for a few minutes so a live
+// demo never waits 30 seconds per request while Google is under high demand.
+const BREAKER_MS = 5 * 60 * 1000;
+let mainDownUntil = 0;
+/** Main model gets a shorter budget so the fallback still answers within a chat-friendly time. */
+const MAIN_TIMEOUT_MS = 12_000;
+
 /**
- * generateContent that rides out Google's short "high demand" spells: one quick retry, then the
- * lighter fallback model. Low thinking where the model supports it.
+ * generateContent that rides out Google's "high demand" spells and timeouts: the main model
+ * (short budget), then straight to the lighter fallback model. Rate limits also go to the fallback.
  */
 export async function generate(params: GenerateContentParameters): Promise<GenerateContentResponse> {
-  try {
-    return await generateOnce(params);
-  } catch (e) {
-    // Free-tier limits are counted per model, so a rate-limited call goes straight to the fallback model.
-    if (isRateLimit(e) && config.ai.fallbackModel && config.ai.fallbackModel !== params.model) {
-      console.warn(`Gemini ${params.model} hit its rate limit; using ${config.ai.fallbackModel} for this request.`);
-      return generateOnce({ ...params, model: config.ai.fallbackModel });
+  const fb = config.ai.fallbackModel;
+  const canFallback = Boolean(fb && fb !== params.model);
+  if (canFallback && Date.now() < mainDownUntil) {
+    try {
+      return await generateOnce({ ...params, model: fb });
+    } catch (e) {
+      if (!isOverloaded(e) && !isRateLimit(e)) throw e;
+      return generateOnce(params); // fallback struggling too: try the main model once more
     }
-    if (!isOverloaded(e)) throw e;
   }
-  await pause(1500);
   try {
-    return await generateOnce(params);
+    return await generateOnce(canFallback ? { ...params, config: { ...params.config, httpOptions: { ...(params.config?.httpOptions ?? {}), timeout: MAIN_TIMEOUT_MS } } } : params);
   } catch (e) {
-    if (!isOverloaded(e) || !config.ai.fallbackModel || config.ai.fallbackModel === params.model) throw e;
-    console.warn(`Gemini ${params.model} is overloaded; using ${config.ai.fallbackModel} for this request.`);
+    if (!isOverloaded(e) && !isRateLimit(e)) throw e;
+    if (!canFallback) {
+      await pause(1500);
+      return generateOnce(params);
+    }
+    mainDownUntil = Date.now() + BREAKER_MS;
+    console.warn(`Gemini ${params.model} unavailable (${String((e as Error)?.message ?? "").slice(0, 80)}); using ${fb} for the next few minutes.`);
+    return generateOnce({ ...params, model: fb });
   }
-  return generateOnce({ ...params, model: config.ai.fallbackModel });
 }
 
 async function generateOnce(params: GenerateContentParameters): Promise<GenerateContentResponse> {

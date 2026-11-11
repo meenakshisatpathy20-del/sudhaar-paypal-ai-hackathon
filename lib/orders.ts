@@ -53,7 +53,7 @@ export const DEMO_CUSTOMER = () => ({
 
 // ---------- Quotes ----------
 
-export async function createQuote(input: { photo?: string; description?: string; category?: Category }): Promise<Quote & { warning?: string }> {
+export async function createQuote(input: { photo?: string; description?: string; category?: Category; lang?: string }): Promise<Quote & { warning?: string }> {
   const q = await quoteItem(input);
   const quote: Quote = {
     id: id("Q"),
@@ -424,8 +424,8 @@ export async function approveOrder(orderId: string, paypalOrderId: string): Prom
         actor: "system",
         message:
           o.mode === "pickup"
-            ? `Repair Saathi assigned. Share pickup OTP ${o.pickupOtp} at pickup.`
-            : `Karigar will visit. Share arrival OTP ${o.pickupOtp} when they arrive.`,
+            ? "Repair Saathi assigned. Your pickup OTP is on your order page; share it only at pickup."
+            : "Karigar will visit. Your arrival OTP is on your order page; share it only when they arrive.",
       });
     } catch (e) {
       const d = describePayPalError(e);
@@ -492,7 +492,7 @@ export async function advance(orderId: string, action: Action, opts: { otp?: str
           : `Handed over to ${k?.shop ?? "karigar"}.`,
       start_repair: o.mode === "home-visit" ? "Karigar arrived (OTP verified) and started the repair." : "Karigar inspected the item and started the repair.",
       mark_repaired: "Karigar marked the repair done and uploaded an after photo.",
-      out_for_delivery: `Out for delivery. Share delivery OTP ${o.deliveryOtp} when the item reaches you.`,
+      out_for_delivery: "Out for delivery. Your delivery OTP is on your order page; share it only when the item reaches you.",
       deliver: "Delivered. Delivery OTP verified.",
       cancel: "Booking cancelled by customer.",
     };
@@ -663,7 +663,7 @@ async function settleInner(orderId: string): Promise<Order> {
           status: "paid_out",
           actor: "system",
           kind: "paypal",
-          message: `Instant payouts sent: ${lines.map((l) => `${l.label} $${l.amount.toFixed(2)}`).join(", ")}. Sudhaar keeps $${o.split.platform.toFixed(2)}${o.donation ? `, $${o.donation.toFixed(2)} to the karigar tool fund` : ""}.`,
+          message: `PayPal payout batch submitted: ${lines.map((l) => `${l.label} $${l.amount.toFixed(2)}`).join(", ")}. Sudhaar keeps $${o.split.platform.toFixed(2)}${o.donation ? `, $${o.donation.toFixed(2)} to the karigar tool fund` : ""}.`,
           ref: batch.batchId,
         });
       } catch (e) {

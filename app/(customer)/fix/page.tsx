@@ -42,7 +42,7 @@ export default function FixPage() {
 function Fix() {
   const router = useRouter();
   const params = useSearchParams();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [step, setStep] = useState(0);
   const [photo, setPhoto] = useState<string>();
   const [description, setDescription] = useState("");
@@ -82,7 +82,7 @@ function Fix() {
     setError(null);
     setLoading(true);
     try {
-      const r = await api<{ quote: Quote & { warning?: string }; offers: Offer[] }>("/api/quote", { photo, description, category: category ?? undefined });
+      const r = await api<{ quote: Quote & { warning?: string }; offers: Offer[] }>("/api/quote", { photo, description, category: category ?? undefined, lang });
       setQuote(r.quote);
       setOffers(r.offers);
       const wanted = params.get("k");
@@ -202,7 +202,7 @@ function Fix() {
                   </div>
                   <div className="rounded-2xl bg-gold/10 p-3 ring-1 ring-gold/25">
                     <p className="text-[11px] text-muted-foreground">{t("youSave")}</p>
-                    <p className="font-display text-lg font-bold text-gold">{quote.newPrice ? `~${rupees(Math.max(0, quote.newPrice - mid))}` : "–"}</p>
+                    <p className="font-display text-lg font-bold text-gold">{quote.newPrice ? `≈ ${rupees(Math.max(0, quote.newPrice - mid))}` : "–"}</p>
                   </div>
                 </div>
               </>

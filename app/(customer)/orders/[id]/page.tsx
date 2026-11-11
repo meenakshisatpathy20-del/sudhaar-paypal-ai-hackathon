@@ -19,6 +19,7 @@ import { useLang } from "@/components/LanguageProvider";
 import { langMeta } from "@/lib/i18n";
 import { STATUS_PROGRESS, StatusPill } from "@/components/StatusPill";
 import { Timeline } from "@/components/Timeline";
+import { TrustReceipt } from "@/components/TrustReceipt";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -319,6 +320,7 @@ function OrderPageInner({ params }: { params: Promise<{ id: string }> }) {
             }
           />
         )}
+        <TrustReceipt order={order} quote={quote} />
         <Card>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between">

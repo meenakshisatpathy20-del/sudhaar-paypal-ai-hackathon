@@ -31,6 +31,9 @@ export async function POST(req: Request) {
   try {
     rateLimit(req, "demo-login", 60);
     const { role = "customer" } = (await req.json().catch(() => ({}))) as { role?: keyof typeof DEMO_IDS };
+    // The one-tap admin is a judging convenience on the sandbox deployment only (test money, synthetic data).
+    // Set DEMO_ADMIN=off on any deployment holding real data to disable it.
+    if (role === "admin" && process.env.DEMO_ADMIN === "off") throw new FlowError("Demo admin login is disabled on this deployment", 403);
     const db = readDB();
     const wanted = role === "karigar" || role === "saathi" ? partnerWithWork(db, role) : null;
     const account = (wanted && db.accounts.find((a) => a.id === wanted && a.demo)) || db.accounts.find((a) => a.id === DEMO_IDS[role]);
