@@ -133,14 +133,14 @@ Google **Gemini** (`gemini-flash-latest` by default, via Google's official `@goo
 
 Without a `GEMINI_API_KEY`, features 1–3 fall back to a deterministic estimator that is clearly labelled "Simulated" in the UI. The agent needs a key. If Gemini is busy or over its usage limit, quotes fall back to the price table, photo checks go to a person, and the agent asks the customer to try again in a minute.
 
-## Team Innoverse: who built it (and how we used AI)
+## Team Innoverse: who built it
 
 | Member | Role |
 |---|---|
-| **Meenakshi Satpathy** | Idea (from a real problem at home), research, product design and features: OTP handovers, Repair Saathi pickup, distance pricing and tracking, Resolve Hub, KYC-verified karigars, the 90% karigar split. PayPal sandbox testing and the demo video. |
-| **Manas Girdhar** | Co-builder: development, testing and review of the product. |
+| **Meenakshi Satpathy** | Developer · idea (from a real problem at home), research, product design, PayPal integration and sandbox testing, the demo video. Features: OTP handovers, Repair Saathi pickup, distance pricing and tracking, Resolve Hub, KYC-verified karigars, the 90% karigar split. |
+| **Manas Girdhar** | Developer · development, AI features, testing and review. |
 
-**AI as our coding assistant:** we used Claude Code (Anthropic's AI coding assistant) to turn our design into code. The first commit, the initial app, was generated with Claude Code from our specification. Later changes, fixes and new features were also written with Claude Code, following our product decisions and feedback, and we reviewed and tested them. At run time the product's own AI is Google Gemini.
+**Built with:** Next.js and TypeScript, PayPal (Orders v2 authorize/capture, Payouts, Invoicing, Refunds, Subscriptions, Agent Toolkit), Google Gemini (vision quotes, photo checks, Repair Agent, text-to-speech), AG Grid, Leaflet/OpenStreetMap, Upstash Redis, Render.
 
 ## Design decisions (and why)
 
