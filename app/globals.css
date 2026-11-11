@@ -96,10 +96,7 @@ a[data-slot="card"]:hover, a:hover > [data-slot="card"] {
   box-shadow: 0 1px 2px rgba(120, 70, 20, 0.06), 0 18px 40px -18px rgba(120, 70, 20, 0.38);
 }
 ::selection { background: #f7c9a8; color: #2b1d14; }
-/* Gentle entrance for page content. */
-@keyframes rise-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-main > * { animation: rise-in 0.35s ease-out both; }
-@media (prefers-reduced-motion: reduce) { main > * { animation: none; } }
+
 @utility no-scrollbar {
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }

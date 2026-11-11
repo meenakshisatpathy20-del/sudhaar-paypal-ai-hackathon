@@ -5,7 +5,7 @@
 **A doorstep repair marketplace for local karigars (informal repairers), built on PayPal + AI.**
 Snap a photo of something broken. AI estimates the repair cost against the price of buying new. A verified local karigar fixes it, a Repair Saathi does the pickup and delivery, and the customer's PayPal payment is **authorized (held, not captured) until the repaired item is back in their hands**. On the delivery OTP, Sudhaar captures the payment and sends a **PayPal Payouts batch** to the karigar and the Saathi, then reconciles each payout's real status. Every order ends in a **Repair Trust Receipt**: one proof trail where each step is green only when its evidence (PayPal id, OTP check, photo review) exists.
 
-> 🌐 **Live demo:** the *Website* link in this repository's About section ·· 📸 **[Screenshots](docs/SCREENSHOTS.md)** · 🧭 **[Demo guide: every page and feature](docs/DEMO-GUIDE.md)** (also in the app at `/guide`) · ✅ **[Test evidence](docs/TESTING.md)** (27/27 lifecycle + security checks, 8-language AI)
+> 🌐 **Live demo:** [sudhaar-mm59.onrender.com](https://sudhaar-mm59.onrender.com) (first load can take ~1 min on the free plan) · 🎬 **Demo video:** on our Devpost page · 📸 **[Screenshots](docs/SCREENSHOTS.md)** · 🧭 **[Demo guide: every page and feature](docs/DEMO-GUIDE.md)** (also in the app at `/guide`) · ✅ **[Test evidence](docs/TESTING.md)** (27/27 lifecycle + security checks, 8-language AI)
 
 ---
 
@@ -92,6 +92,8 @@ A monthly plan (₹169, billed $1.99/month by PayPal in the sandbox) for homes t
 Codes such as `FIRSTFIX` (₹50 off a first repair), `DIWALI25` (₹25 off above ₹200) and `GHARSAFAI` (15% off baskets). Every code is checked on the server (first order only, baskets only, minimum order, once per customer, usage limit, expiry) when it's applied **and again when booking**. The discount comes out of **Sudhaar's own share** and is capped by it, so **the karigar and Saathi are always paid in full**; it reaches PayPal as `breakdown.discount` on the order and `invoice_discount` on the invoice. The admin console creates codes, switches them off and shows how often each was used.
 
 ### 📞 Phone line on Bolna (for people without a smartphone)
+> **Status:** built and tested against Bolna's API, but **not switched on in the hosted demo** (it needs a paid Bolna phone number). The website hides the number and the "Call me" button until it is configured. Setup: [docs/BOLNA.md](docs/BOLNA.md).
+
 A Hindi voice agent on [Bolna](https://www.bolna.ai) answers a phone number. It recognises returning callers by their number, quotes a repair with Gemini, books a pickup slot, tells callers where their repair is, cancels before pickup (voiding the PayPal hold) and files warranty claims into Resolve Hub. It does all of this through Sudhaar's own `/api/voice/*` functions, which are protected by a shared secret.
 
 Bolna is used as a **voice layer on the whole repair**, in both directions. Inbound, the agent quotes, books, tracks, cancels, files claims, texts a forgotten OTP and hands callers to a person. Outbound, a background conductor has the same agent **call the family payer** when a phone booking isn't paid after 2 hours and **call the phone customer** before the pickup, alongside SMS reminders, expiry notices and job texts to the karigar and Saathi. The admin sees every call (transcripts), text and callback request per customer in **Admin → Phone line → Customer timeline**.
