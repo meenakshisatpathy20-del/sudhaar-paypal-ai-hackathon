@@ -12,8 +12,8 @@ import type { Account, Complaint, Order } from "./types";
 
 // Sudhaar Repair Agent: a Gemini function-calling loop that acts for the customer.
 // It quotes, picks the best karigar against the customer's budget/deadline, books the job and
-// creates the PayPal order (intent AUTHORIZE), tracks it, files warranty claims and issues small
-// refunds within a hard-coded policy limit. Read-only PayPal lookups (orders, invoices, refunds,
+// creates the PayPal order (intent AUTHORIZE), tracks it, files warranty claims and sends refund
+// recommendations to a person on the Resolve Hub desk (it never refunds by itself). Read-only PayPal lookups (orders, invoices, refunds,
 // transactions) go through the PayPal Agent Toolkit. The customer approves every payment in the
 // PayPal popup, so the agent can never spend money on its own.
 

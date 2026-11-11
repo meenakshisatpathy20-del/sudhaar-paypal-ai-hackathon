@@ -22,7 +22,7 @@ Sudhaar fixes each of those problems:
 | "Is it worth repairing?" | **AI Snap & Quote**: repair-cost range vs. new price, so you see the saving |
 | "I'll get overcharged / I can't trust a stranger" | Price shown upfront, **PayPal holds the money** until delivery, OTP at every handover |
 | "What if it breaks again?" | 15-day warranty (30 with Sudhaar Care) and **Resolve Hub**, a full claims desk built into the site: claim ids, priority with a decision deadline (SLA), photo evidence, a three-way conversation (customer, karigar, Sudhaar team), status workflow, activity log, notifications, and PayPal refunds approved by a person |
-| Karigars get few customers and get paid late | Free listing, karigar keeps **90%** of the repair charge, **instant PayPal payout** |
+| Karigars get few customers and get paid late | Free listing, karigar keeps **90%** of the repair charge, **PayPal payout right after delivery** |
 
 ## What it does (end to end)
 
@@ -118,7 +118,7 @@ All calls go to the PayPal **sandbox**. Every PayPal id appears on the order pag
 | **Invoicing v2** | `createPaidInvoice` | Generates, sends and marks paid a PayPal invoice (with `invoice_discount` for coupons / Care): the "digital bill" used by Resolve Hub |
 | **Catalog Products + Billing Plans v1** | `createCareProduct`, `createCarePlan` | Creates the Sudhaar Care product and monthly plan the first time anyone subscribes |
 | **Subscriptions v1** | `createSubscription`, `getSubscription`, `cancelSubscription` ([`lib/care.ts`](lib/care.ts)) | Customer approves on PayPal; Sudhaar confirms the status with PayPal before activating; cancel from the app |
-| **Refunds (Payments v2)** | `refundCapture` | Partial or full refunds from Resolve Hub (support desk or agent within limit), split across both captures when there was a price increase |
+| **Refunds (Payments v2)** | `refundCapture` | Partial or full refunds from Resolve Hub (always approved by a person on the support desk), split across both captures when there was a price increase |
 | **Webhooks** | [`app/api/paypal/webhook/route.ts`](app/api/paypal/webhook/route.ts) | Verifies signatures (`verify-webhook-signature`), logs events on the order, and (only when verified) updates Sudhaar Care from `BILLING.SUBSCRIPTION.*` and `PAYMENT.SALE.COMPLETED` |
 | **PayPal Agent Toolkit** | [`lib/agent.ts`](lib/agent.ts) | `get_order`, `get_invoice`, `list_invoices`, `get_refund`, `list_transactions`, `list_disputes` as agent tools |
 
