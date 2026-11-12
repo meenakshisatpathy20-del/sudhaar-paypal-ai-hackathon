@@ -1,5 +1,7 @@
 "use client";
 
+const LISTEN: Record<string, string> = { en: "Listen", hi: "सुनें", bn: "শুনুন", mr: "ऐका", te: "వినండి", ta: "கேளுங்கள்", or: "ଶୁଣନ୍ତୁ", kn: "ಕೇಳಿ" };
+
 import { PhoneLine } from "@/components/PhoneLine";
 import { RequireLogin } from "@/components/LoginSheet";
 import { rupees } from "@/components/Inr";
@@ -122,7 +124,7 @@ function TalkPageInner() {
               <p className="whitespace-pre-wrap leading-relaxed">{m.role === "agent" ? <RichText text={m.text} /> : m.text}</p>
               {m.role === "agent" && m.text && !m.text.startsWith("⚠️") && (
                 <button onClick={() => speak(m.text, lang)} className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
-                  <Volume2 className="size-3" /> Listen
+                  <Volume2 className="size-3" /> {LISTEN[lang] ?? LISTEN.en}
                 </button>
               )}
               {m.steps && m.steps.length > 0 && (
