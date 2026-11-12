@@ -30,7 +30,7 @@ export function SiteFooter() {
       title: t("ftAbout"),
       links: [
         ["/guide", t("ftGuide")],
-        ["https://github.com/meenakshisatpathy20-del/sudhaar-paypal", "GitHub"],
+        ["https://github.com/meenakshisatpathy20-del/sudhaar-paypal-ai-hackathon", "GitHub"],
       ],
     },
   ];

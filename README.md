@@ -238,8 +238,8 @@ The demo buttons open the karigar and Saathi of the most recent booking that's w
 Requirements: Node 20+.
 
 ```bash
-git clone https://github.com/meenakshisatpathy20-del/sudhaar-paypal.git
-cd sudhaar-paypal
+git clone https://github.com/meenakshisatpathy20-del/sudhaar-paypal-ai-hackathon.git
+cd sudhaar-paypal-ai-hackathon
 npm install
 cp .env.example .env      # fill in the values below
 npm run smoke:paypal      # optional: checks your PayPal sandbox credentials
