@@ -72,6 +72,17 @@ check("right delivery OTP -> delivered/captured", ["delivered", "paid_out"].incl
 const fin = (await cust(`/api/orders/${id}`)).order;
 check("capture id recorded", fin.paypal.captureId, fin.paypal.captureId);
 check("payouts recorded", fin.payouts.length >= 2, fin.payouts.map((p) => `${p.to}:${p.amount}:${p.status}`).join(" "));
+// Idempotency: a second delivery request must not capture or pay out twice.
+const again = await saathi(`/api/orders/${id}/action`, { action: "deliver", otp: o.deliveryOtp });
+const fin2 = (await cust(`/api/orders/${id}`)).order;
+check("repeat delivery rejected, no second capture", again.status >= 400 && fin2.paypal.captureId === fin.paypal.captureId && fin2.payouts.length === fin.payouts.length, `status=${again.status}`);
+// Webhooks: an unsigned (unverified) event must never change an order, even if sent twice.
+const evBefore = fin2.events.length;
+const fake = { id: "WH-TEST-" + id, event_type: "PAYMENT.CAPTURE.COMPLETED", resource: { id: fin.paypal.captureId, custom_id: id } };
+const w1 = await (await fetch(BASE + "/api/paypal/webhook", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(fake) })).json();
+const w2 = await (await fetch(BASE + "/api/paypal/webhook", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(fake) })).json();
+const fin3 = (await cust(`/api/orders/${id}`)).order;
+check("unverified webhook (sent twice) changes nothing", w1.verified === false && w2.verified === false && fin3.events.length === evBefore && fin3.status === fin2.status);
 check("no OTP in any event text (final)", !fin.events.some((e) => e.message.includes(o.pickupOtp) || e.message.includes(o.deliveryOtp)));
 
 // Cross-account isolation: a fresh customer signs up and must not see this order.

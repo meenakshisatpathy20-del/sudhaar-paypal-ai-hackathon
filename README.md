@@ -5,7 +5,7 @@
 **A doorstep repair marketplace for local karigars (informal repairers), built on PayPal + AI.**
 Snap a photo of something broken. AI estimates the repair cost against the price of buying new. A verified local karigar fixes it, a Repair Saathi does the pickup and delivery, and the customer's PayPal payment is **authorized (held, not captured) until the repaired item is back in their hands**. On the delivery OTP, Sudhaar captures the payment and sends a **PayPal Payouts batch** to the karigar and the Saathi, then reconciles each payout's real status. Every order ends in a **Repair Trust Receipt**: one proof trail where each step is green only when its evidence (PayPal id, OTP check, photo review) exists.
 
-> 🌐 **Live demo:** [sudhaar-mm59.onrender.com](https://sudhaar-mm59.onrender.com) (first load can take ~1 min on the free plan) · 🎬 **Demo video:** on our Devpost page · 📸 **[Screenshots](docs/SCREENSHOTS.md)** · 🧭 **[Demo guide: every page and feature](docs/DEMO-GUIDE.md)** (also in the app at `/guide`) · ✅ **[Test evidence](docs/TESTING.md)** (27/27 lifecycle + security checks, 8-language AI)
+> 🌐 **Live demo:** [sudhaar-mm59.onrender.com](https://sudhaar-mm59.onrender.com) (first load can take ~1 min on the free plan) · 🎬 **Demo video:** on our Devpost page · 📸 **[Screenshots](docs/SCREENSHOTS.md)** · 🧭 **[Demo guide: every page and feature](docs/DEMO-GUIDE.md)** (also in the app at `/guide`) · ✅ **[Test evidence](docs/TESTING.md)** (lifecycle + security checks, a real sandbox authorize → capture → payouts → invoice run, 8-language AI)
 
 ---
 
@@ -183,6 +183,8 @@ So a website booking keeps roughly ₹59, and a phone booking still covers its c
 | OTPs never appear in activity logs; partner and public views scrub any code from event text; SMS logs mask codes | `lib/orders.ts`, `lib/privacy.ts` `orderFor()`, `lib/sms.ts` |
 | Repair photos are private: sign-in required (or the anonymous visitor who uploaded it), 128-bit opaque ids, file signature check, `private` cache + `nosniff` | `app/api/uploads/*` |
 | Every refund is decided by a person; the AI agent can only recommend | `lib/agent.ts` (`issue_refund` always escalates) |
+| The agent's PayPal Toolkit is limited to single-record lookups, and every id is checked against the customer's own orders before PayPal is called | `lib/agent.ts` `assertOwnPayPalArgs()` |
+| PayPal webhooks: unsigned events never change data; a repeated event id is processed once | `app/api/paypal/webhook` |
 | Phone cancellations need the caller's 4-digit PIN, not just caller ID | `lib/voice.ts` `voiceCancel()` |
 | Gemini overload/timeouts switch to a lighter model for 5 minutes, so demos never hang | `lib/llm.ts` |
 | Quotes, agent replies and **spoken replies in all 8 languages** (browser voice, else Gemini TTS) | `lib/ai.ts`, `app/api/tts`, `components/voice.ts` |
@@ -196,7 +198,7 @@ So a website booking keeps roughly ₹59, and a phone booking still covers its c
 - The phone line (Bolna) needs a Bolna account and number; without them the site hides it.
 - Authorizations have an honor period (about 3 days); long repairs may need reauthorization, which is not yet automated.
 - A photo can screen evidence but cannot prove an internal electrical or mechanical repair, so a human stays in the loop.
-- JSON-file storage (with optional Upstash snapshot) is fine for a demo, not for production scale.
+- JSON-file storage (with Upstash snapshot so data survives restarts) is for the demo. **Planned:** PostgreSQL with transactional settlement and a PayPal reconciliation job for production.
 
 ## Testing instructions for judges
 

@@ -2,7 +2,7 @@
 
 Every result here can be re-run. Labels follow our evidence rule: **runtime-verified** = executed and observed; **source-verified** = in code, not separately executed.
 
-## 1. Repair lifecycle and security test (runtime-verified, 27/27)
+## 1. Repair lifecycle and security test (runtime-verified, 29 checks)
 
 ```bash
 # terminal 1: a simulated-mode server (no PayPal/Gemini keys), so the whole flow runs without a PayPal popup
@@ -26,6 +26,8 @@ npm run test:flow -- http://localhost:3000
 | 23-24 | A second, freshly signed-up customer **cannot** open the order (404) | PASS |
 | 25-26 | Anonymous requests cannot read the admin API or reset data (401) | PASS |
 | 27 | `/api/config` exposes no secret | PASS |
+| 28 | **Repeat delivery request is rejected**: no second capture, no duplicate payouts | PASS |
+| 29 | **Unsigned PayPal webhook, sent twice, changes nothing** (signature verification + event-id de-duplication) | PASS |
 
 ## 2. Private photos (runtime-verified)
 
@@ -35,7 +37,18 @@ npm run test:flow -- http://localhost:3000
 | Uploader (same browser) GET of own photo | 200 |
 | Text file renamed to `.jpg` | **400** "That file is not a valid image" |
 
-## 3. Real PayPal sandbox (runtime-verified)
+## 3. Real PayPal sandbox: full customer-approved lifecycle (runtime-verified)
+
+One real order, booked in the UI and approved by the sandbox buyer in the PayPal popup, then driven through the Saathi, karigar and admin apps. Every id below was returned by PayPal's sandbox (not `SIM-` simulated ids):
+
+| Step | PayPal API | Sandbox id |
+|---|---|---|
+| Customer approves the hold | Orders v2 `intent=AUTHORIZE` → authorize | `3WG73031PT598930P` |
+| Delivery OTP verified → capture | Payments v2 capture | `5T922744SP3574046` |
+| Karigar + Saathi paid | Payouts batch (item status shown as `PENDING` until PayPal confirms; never shown as received early) | `7TPSQMLX8EY6S` |
+| Paid invoice for the customer | Invoicing v2 | `INV2-U2H5-KDBP-LYDC-ZLY3` |
+
+The photo check on that order is a useful proof of the guardrail: the karigar uploaded a plain grey test image, and **Gemini rejected it** ("a blank gray placeholder image… does not show the repaired mixer grinder jar"), so the payment stayed held until a human reviewer decided.
 
 - Server start-up check: `PayPal sandbox accepted the Client ID and Secret.`
 - Repair Agent booking created real sandbox order `76L12884SR3255233` (intent AUTHORIZE); the PayPal v6 button rendered for approval.
@@ -65,6 +78,11 @@ The Repair Agent replied in Hindi and Tamil when asked in those languages.
 - **Speech input:** Web Speech API (Chrome/Edge, all 8 locales). The mic button hides itself where unsupported and explains a denied permission. *(source-verified)*
 - **Spoken replies:** an installed browser voice when the device has one, otherwise Gemini TTS from `/api/tts` *(runtime-verified, table above)*.
 - **Phone line (Bolna):** optional; the website hides the number and "Call me" until `VOICE_PHONE_NUMBER` / `BOLNA_*` are set. Phone cancellation needs the caller's 4-digit PIN as well as caller ID. *(source-verified)*
+
+## 6. Repair Agent permission boundary (source-verified)
+
+- The PayPal Agent Toolkit is configured with **single-record lookups only** (`get_order`, `get_invoice`, `get_refund`). Merchant-wide list tools (invoices, transactions, disputes) are not given to the customer-facing agent.
+- Before any Toolkit call runs, `assertOwnPayPalArgs()` in `lib/agent.ts` checks that every PayPal id in the request belongs to the signed-in customer's own orders; otherwise the call is refused. The prompt is never the access-control boundary.
 
 ## Known gaps (kept visible on purpose)
 

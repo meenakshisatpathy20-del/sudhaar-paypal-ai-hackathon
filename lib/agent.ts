@@ -36,18 +36,41 @@ interface Session {
 const sessions = new Map<string, Session>();
 
 let toolkit: PayPalAgentToolkit | null = null;
+
+/** Every PayPal id that belongs to this customer's own Sudhaar orders (orders, captures, invoices, refunds, tips, top-ups). */
+export function customerPayPalIds(customerId: string): Set<string> {
+  const ids = new Set<string>();
+  const walk = (v: unknown) => {
+    if (typeof v === "string") { if (/^[A-Z0-9-]{8,}$/i.test(v)) ids.add(v.toUpperCase()); return; }
+    if (Array.isArray(v)) return v.forEach(walk);
+    if (v && typeof v === "object") Object.values(v).forEach(walk);
+  };
+  for (const o of readDB().orders) if (o.customerId === customerId) walk([o.paypal, o.tips, o.priceChange]);
+  return ids;
+}
+
+/**
+ * Server-side guard in front of the PayPal Agent Toolkit: every id the model passes must be on
+ * the signed-in customer's own orders. The prompt is never the access-control boundary.
+ */
+export function assertOwnPayPalArgs(customerId: string, args: Record<string, unknown>) {
+  const own = customerPayPalIds(customerId);
+  const asked = Object.entries(args).filter(([k, v]) => typeof v === "string" && /id$|_id|token/i.test(k)).map(([, v]) => String(v).toUpperCase());
+  if (asked.length === 0) throw new FlowError("Tell me which of your orders to look up");
+  for (const id of asked) if (!own.has(id)) throw new FlowError("That PayPal record is not on your Sudhaar account");
+}
 function paypalToolkit() {
   if (!paypalEnabled()) return null;
   toolkit ??= new PayPalAgentToolkit({
     clientId: config.paypal.clientId,
     clientSecret: config.paypal.clientSecret,
     configuration: {
+      // Single-record lookups only. No merchant-wide lists (invoices, transactions, disputes):
+      // a customer-facing agent must never be able to browse other customers' money records.
       actions: {
         orders: { get: true },
-        invoices: { get: true, list: true },
+        invoices: { get: true },
         payments: { getRefunds: true },
-        transactions: { list: true },
-        disputes: { list: true },
       },
       context: { sandbox: true },
     },
@@ -66,7 +89,7 @@ You act on the customer's behalf, not just advise:
 4b. Ghar Safai Mode: if the customer has several things to fix (e.g. Diwali cleaning), quote each item, then book them together with book_ghar_safai_basket: one Saathi trip and one PayPal payment split across the karigars.
 4c. Family Pay: if the customer wants a family member to pay (e.g. "ask my son to pay"), pass family_payer_name and family_payer_relation. The family member gets a link and approves with their own PayPal.
 5. For problems after delivery, use raise_warranty_claim. You can never issue money yourself: if the AI review recommends a refund, call issue_refund, which hands it to a human on the Resolve Hub desk, and tell the customer a person will decide.
-6. Use the PayPal lookup tools (get_order, get_invoice, list_invoices, get_refund, list_transactions) when the customer asks about bills, payments or refunds.
+6. For bills, payments or refunds, first call get_order_status to get the customer's own PayPal ids, then use the PayPal lookup tools (get_order, get_invoice, get_refund) with those ids only.
 
 Keep replies short and friendly (2-5 sentences), because they are often read aloud by voice. Write plain text only: no Markdown, no ** bold, no bullet symbols or headings. Use plain language and follow the language note on each message. Never invent order ids, prices or PayPal ids: only use what tools return.
 Money: tools work in USD because PayPal sandbox settles in USD. Speak to the customer in rupees, converting at ₹${INR_PER_USD} per $1 and rounding to the nearest rupee (e.g. "₹338, which PayPal charges as $3.98" for a total). If the customer gives a budget in rupees, convert it to USD before comparing offers.`;
@@ -338,6 +361,7 @@ async function runTurn(session: Session, sessionId: string, input: { customer: A
       try {
         let out: unknown;
         if (viaToolkit && tk) {
+          assertOwnPayPalArgs(input.customer.id, args);
           const r = await tk.handleToolCall({ id: call.id ?? crypto.randomUUID(), type: "function", function: { name, arguments: JSON.stringify(args) } });
           out = r.content;
         } else {

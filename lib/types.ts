@@ -440,7 +440,7 @@ export interface DB {
   saathis: Saathi[];
   quotes: Quote[];
   orders: Order[];
-  webhooks: { at: string; type: string; resource?: string; verified: boolean }[];
+  webhooks: { at: string; type: string; resource?: string; verified: boolean; eventId?: string; duplicate?: boolean }[];
   applications: KarigarApplication[];
   accounts: Account[];
   /** Karigar and Saathi ids that switched themselves offline (no new jobs). */
