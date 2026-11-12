@@ -303,7 +303,7 @@ postman/            Postman collection for the full flow
 scripts/            PayPal sandbox smoke test
 ```
 
-## From hackathon to startup
+## From hackathon to startup idea:
 
 Sudhaar works end to end today as a demo on the PayPal sandbox. This is our plan to make it work for millions of households, and the facts it rests on.
 
