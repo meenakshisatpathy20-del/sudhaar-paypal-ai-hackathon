@@ -137,8 +137,8 @@ Without a `GEMINI_API_KEY`, features 1–3 fall back to a deterministic estimato
 
 | Member | Role |
 |---|---|
-| **Meenakshi Satpathy** | Developer · idea (from a real problem at home), research, product design, PayPal integration and sandbox testing, the demo video. Features: OTP handovers, Repair Saathi pickup, distance pricing and tracking, Resolve Hub, KYC-verified karigars, the 90% karigar split. |
-| **Manas Girdhar** | Developer · development, AI features, testing and review. |
+| **Meenakshi Satpathy** | Developer |
+| **Manas Girdhar** | Developer |
 
 **Built with:** Next.js and TypeScript, PayPal (Orders v2 authorize/capture, Payouts, Invoicing, Refunds, Subscriptions, Agent Toolkit), Google Gemini (vision quotes, photo checks, Repair Agent, text-to-speech), AG Grid, Leaflet/OpenStreetMap, Upstash Redis, Render.
 
